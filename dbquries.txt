@@ -1,0 +1,38 @@
+-- ================================
+-- APTITUDE QUESTIONS TABLE
+-- ================================
+CREATE TABLE aptitude_questions (
+    id SERIAL PRIMARY KEY,
+    question TEXT NOT NULL,
+    option_a VARCHAR(255) NOT NULL,
+    option_b VARCHAR(255) NOT NULL,
+    option_c VARCHAR(255) NOT NULL,
+    option_d VARCHAR(255) NOT NULL,
+    correct_option CHAR(1)
+);
+
+-- ================================
+-- TECHNICAL QUESTIONS TABLE
+-- ================================
+CREATE TABLE technical_questions (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    problem_statement TEXT NOT NULL,
+    input_format TEXT,
+    output_format TEXT,
+    sample_input TEXT,
+    sample_output TEXT,
+    constraints TEXT,
+    difficulty VARCHAR(50)
+);
+
+-- ================================
+-- USER CODE SUBMISSIONS TABLE
+-- ================================
+CREATE TABLE user_code_submissions (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    question_id INTEGER NOT NULL,
+    code TEXT NOT NULL,
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
