@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Profile Setup - HirePrep AI</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    color: white;
+}
+
+.container {
+    background: rgba(0, 0, 0, 0.65);
+    padding: 35px 25px;
+    border-radius: 18px;
+    width: 320px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 35px rgba(0, 255, 204, 0.4);
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.logo {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: 2px solid #00ffcc;
+    margin-bottom: 20px;
+}
+
+h2 {
+    font-size: 18px;
+    margin-bottom: 20px;
+    color: #00ffcc;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 12px;
+    border-radius: 20px;
+    border: none;
+    outline: none;
+    font-size: 14px;
+}
+
+textarea {
+    resize: none;
+    height: 60px;
+}
+
+input:focus, select:focus, textarea:focus {
+    box-shadow: 0 0 5px #00ffcc;
+}
+
+.btn {
+    width: 120px;
+    padding: 8px;
+    margin-top: 20px;
+    border-radius: 20px;
+    border: none;
+    background-color: #00ffcc;
+    color: black;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.btn:hover {
+    background-color: #00cc99;
+}
+
+label {
+    font-size: 13px;
+    margin-top: 10px;
+    display: block;
+    text-align: left;
+    color: #ccc;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <img src="logo.png" class="logo">
+
+    <h2>Set Up Your Profile</h2>
+
+    <form id="profileForm">
+
+        <label>Gender</label>
+        <select required>
+            <option value="">Select Gender</option>
+            <option>Male</option>
+            <option>Female</option>
+            <option>Other</option>
+        </select>
+
+        <label>Age</label>
+        <input type="number" placeholder="Your Age" required>
+
+        <label>Education Level</label>
+        <select required>
+            <option value="">Select Education</option>
+            <option>High School</option>
+            <option>Diploma</option>
+            <option>Bachelor's Degree</option>
+            <option>Master's Degree</option>
+            <option>PhD</option>
+        </select>
+
+        <label>Field of Study / Domain</label>
+        <input type="text" placeholder="e.g. Computer Science, MBA..." required>
+
+        <label>Year of Completion</label>
+        <input type="number" placeholder="e.g. 2025" required>
+
+        <label>Current Status</label>
+        <select required>
+            <option value="">Select Status</option>
+            <option>Student</option>
+            <option>Fresher</option>
+            <option>Experienced Professional</option>
+            <option>Career Break</option>
+        </select>
+
+        <label>Years of Experience</label>
+        <input type="number" placeholder="0 if fresher">
+
+        <label>Preferred Job Role</label>
+        <input type="text" placeholder="e.g. Software Developer, Data Analyst">
+
+        <label>Skills</label>
+        <textarea placeholder="List your skills separated by commas"></textarea>
+
+        <label>Short Career Goal</label>
+        <textarea placeholder="Describe your career goal in 2-3 lines"></textarea>
+
+        <button type="submit" class="btn">Save Profile</button>
+
+    </form>
+
+</div>
+
+<script>
+document.getElementById("profileForm").addEventListener("submit", function(event) {
+    event.preventDefault();
+    alert("Profile Saved Successfully!");
+    
+    // Redirect to Career Page
+    window.location.href = "career.html";
+});
+</script>
+
+</body>
+</html>

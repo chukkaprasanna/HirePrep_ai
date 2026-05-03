@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HirePrep AI - Dashboard</title>
+<style>
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    color: white;
+}
+
+.container {
+    background: rgba(0, 0, 0, 0.65);
+    padding: 35px 25px;
+    border-radius: 18px;
+    width: 320px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 35px rgba(0, 255, 204, 0.4);
+}
+
+h2 {
+    font-size: 18px;
+    margin-bottom: 20px;
+    color: #00ffcc;
+}
+
+label {
+    font-size: 13px;
+    display: block;
+    margin-top: 12px;
+    text-align: left;
+    color: #ccc;
+}
+
+input, select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 6px;
+    border-radius: 20px;
+    border: none;
+    outline: none;
+    font-size: 14px;
+}
+
+input:focus, select:focus {
+    box-shadow: 0 0 5px #00ffcc;
+}
+
+button {
+    width: 120px;
+    padding: 8px;
+    margin-top: 20px;
+    border-radius: 20px;
+    border: none;
+    background-color: #00ffcc;
+    color: black;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+button:hover {
+    background-color: #00cc99;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>Tell Us About Your Goals</h2>
+
+    <label for="company">Which company are you aiming for?</label>
+    <select id="company">
+        <option value="Google">Google</option>
+        <option value="Microsoft">Microsoft</option>
+        <option value="Amazon">Amazon</option>
+        <option value="Facebook">Facebook</option>
+        <option value="Apple">Apple</option>
+        <option value="Tesla">Tesla</option>
+        <option value="Other">Other</option>
+    </select>
+
+    <label for="role">What role are you targeting?</label>
+    <select id="role">
+        <option value="Software Engineer">Software Engineer</option>
+        <option value="Data Scientist">Data Scientist</option>
+        <option value="Product Manager">Product Manager</option>
+        <option value="Cybersecurity Analyst">Cybersecurity Analyst</option>
+        <option value="Cloud Engineer">Cloud Engineer</option>
+        <option value="Other">Other</option>
+    </select>
+
+    <label for="package">Expected salary package (LPA)?</label>
+    <input type="number" id="package" placeholder="Enter amount in LPA">
+
+    <label for="skills">Your technical skills (comma-separated)</label>
+    <input type="text" id="skills" placeholder="E.g. Java, Python, React">
+
+    <button onclick="savePreferences()">Next</button>
+</div>
+
+<script>
+function savePreferences() {
+    let company = document.getElementById("company").value;
+    let role = document.getElementById("role").value;
+    let packageVal = document.getElementById("package").value;
+    let skills = document.getElementById("skills").value;
+
+    if (!packageVal || !skills.trim()) {
+        alert("Please fill all fields before proceeding!");
+        return;
+    }
+
+    let userPreferences = {
+        company: company,
+        role: role,
+        package: packageVal,
+        skills: skills.split(",").map(skill => skill.trim())
+    };
+
+    console.log("User Preferences:", userPreferences);
+
+    alert("Preferences saved! Redirecting to AI Interview...");
+    window.location.href = "start_interview.html"; // Next page
+}
+</script>
+
+</body>
+</html>

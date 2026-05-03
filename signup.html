@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sign Up - HirePrep AI</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    color: white;
+}
+
+.container {
+    background: rgba(0, 0, 0, 0.65);
+    padding: 40px 30px;
+    border-radius: 18px;
+    width: 320px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 35px rgba(0, 255, 204, 0.4);
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 15px;
+    border-radius: 20px;
+    border: none;
+    outline: none;
+}
+
+.btn {
+    width: 120px;
+    padding: 8px;
+    margin-top: 20px;
+    border-radius: 20px;
+    border: none;
+    background-color: #00ffcc;
+    color: black;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.link-text {
+    margin-top: 18px;
+    font-size: 13px;
+    color: #ccc;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<form id="signupForm">
+    <input type="email" name="email" placeholder="Enter your Email" required>
+    <input type="password" name="password" placeholder="Create Password" required>
+    <button type="submit" class="btn">Sign Up</button>
+</form>
+
+<div class="link-text">
+    Already have an account?
+    <a href="login.html">Login</a>
+</div>
+
+</div>
+
+<script>
+document.getElementById("signupForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+
+    const res = await fetch("http://127.0.0.1:5000/signup", {
+        method: "POST",
+        body: formData
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+        alert("Signup Successful!");
+        window.location.href = "login.html";
+    } else {
+        alert(data.error);
+    }
+});
+</script>
+
+</body>
+</html>

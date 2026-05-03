@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HirePrep AI - Welcome</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        body {
+    margin: 0;
+    padding: 0;
+    background-color: #0b1f3a;   /* Dark Navy Blue */
+    font-family: Arial, sans-serif;
+    color: white;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+        .container {
+            text-align: center;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 50px;
+            border-radius: 15px;
+            box-shadow: 0 0 25px rgba(0, 255, 204, 0.5);
+            width: 350px;
+        }
+
+        .welcome-text {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #00ffcc;
+        }
+
+        .logo {
+            width: 120px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+
+        .app-name {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 25px;
+        }
+
+      .btn {
+    width: 180px;          /* Smaller width */
+    padding: 10px 0;       /* Smaller height */
+    margin-top: 12px;
+    border: none;
+    border-radius: 25px;   /* Rounded corners */
+    font-size: 14px;       /* Slightly smaller text */
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+        .login-btn {
+            background-color: #00ffcc;
+            color: black;
+        }
+
+        .login-btn:hover {
+            background-color: #00cc99;
+        }
+
+        .signup-btn {
+            background-color: transparent;
+            color: white;
+            border: 2px solid #00ffcc;
+        }
+
+        .signup-btn:hover {
+            background-color: #00ffcc;
+            color: black;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="welcome-text">
+           <h6> Welcome to AI-Assisted to Achieve Your Goals</h6>
+        </div>
+
+        <!-- Correct Image Path -->
+        <img src="images/avatar.png" alt="HirePrep AI Logo" class="logo">
+
+        <div class="app-name">
+            <h5>HirePrep AI</h5>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <button class="btn login-btn" onclick="window.location.href='login.html'">
+            Login
+        </button>
+
+        <button class="btn signup-btn" onclick="window.location.href='signup.html'">
+            Sign Up
+        </button>
+
+    </div>
+
+</body>
+</html>

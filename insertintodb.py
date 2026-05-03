@@ -5,7 +5,7 @@ import json
 def get_connection():
     return psycopg2.connect(
         host="localhost",
-        database="hireprep1",
+        database="postgres",
         user="postgres",
         password="1234",
         port=5432
@@ -106,7 +106,7 @@ def insert_interview_questions(questions):
 
     conn = psycopg2.connect(
         host="localhost",
-        database="hireprep1",
+        database="postgres",
         user="postgres",
         password="1234",
         port=5432

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title> HirePrep AI - Rounds</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: white;
+        }
+
+        .container {
+            background: rgba(0,0,0,0.65);
+            padding: 35px 25px;
+            border-radius: 18px;
+            width: 350px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 35px rgba(0, 255, 204, 0.4);
+        }
+
+        h2 {
+            font-size: 18px;
+            margin-bottom: 25px;
+            color: #00ffcc;
+        }
+
+        .round-btn {
+            width: 100%;
+            padding: 12px;
+            margin: 12px 0;
+            border-radius: 25px;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #00ffcc;
+            color: black;
+            transition: 0.3s ease;
+        }
+
+        .round-btn:hover {
+            background-color: #00cc99;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h2>Start Interview</h2>
+
+        <button class="round-btn" onclick="window.location.href='aptitude.html'">
+            Aptitude Round
+        </button>
+
+        <button class="round-btn" onclick="window.location.href='technical.html'">
+            Technical Round
+        </button>
+
+        <button class="round-btn" onclick="window.location.href='finalinterview_voice.html'">
+            Interview Round
+        </button>
+    </div>
+
+</body>
+</html>

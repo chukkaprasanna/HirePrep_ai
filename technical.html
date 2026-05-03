@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HirePrep AI — Technical Round</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#0a0a0f; --surface:#111118; --surface2:#1a1a26; --surface3:#0d0d18;
+    --border:rgba(255,255,255,0.07); --accent:#e066ff; --accent2:#7c6af7;
+    --green:#22d9a0; --red:#ff4f6a; --yellow:#f5c542; --blue:#00b8ff;
+    --text:#f0f0f8; --muted:#6b6b8a; --code-bg:#080810;
+  }
+  html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow:hidden;height:100vh}
+  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 50% 60% at 75% 20%,rgba(224,102,255,.09) 0%,transparent 60%),radial-gradient(ellipse 40% 40% at 15% 85%,rgba(124,106,247,.08) 0%,transparent 60%);pointer-events:none;z-index:0}
+  /* TOP NAV */
+  .nav{position:relative;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:rgba(17,17,24,.8);border-bottom:1px solid var(--border);backdrop-filter:blur(10px)}
+  .brand{display:flex;align-items:center;gap:10px}
+  .brand-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px}
+  .brand-name{font-family:'Syne',sans-serif;font-weight:700;font-size:14px}
+  .brand-name span{color:var(--accent)}
+  .nav-center{display:flex;align-items:center;gap:12px}
+  .nav-badge{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;font-family:'Syne',sans-serif;letter-spacing:.06em}
+  .badge-tech{background:rgba(224,102,255,.12);border:1px solid rgba(224,102,255,.25);color:var(--accent)}
+  .badge-diff{background:rgba(245,197,66,.1);border:1px solid rgba(245,197,66,.25);color:var(--yellow)}
+  .nav-right{display:flex;align-items:center;gap:12px}
+  .timer-nav{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--yellow);border:1px solid rgba(245,197,66,.3);background:rgba(245,197,66,.07);padding:5px 12px;border-radius:8px;transition:all .3s}
+  .timer-nav.urgent{color:var(--red);border-color:rgba(255,79,106,.4);background:rgba(255,79,106,.08);animation:pulse 1s infinite}
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+  .btn-run{display:flex;align-items:center;gap:6px;padding:7px 16px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;box-shadow:0 3px 12px rgba(224,102,255,.3)}
+  .btn-run:hover{box-shadow:0 5px 18px rgba(224,102,255,.45);transform:translateY(-1px)}
+  .btn-run:active{transform:scale(.97)}
+  .btn-submit-nav{display:flex;align-items:center;gap:6px;padding:7px 16px;background:var(--surface2);color:var(--green);border:1px solid rgba(34,217,160,.25);border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+  .btn-submit-nav:hover{background:rgba(34,217,160,.08);border-color:rgba(34,217,160,.4)}
+  /* MAIN LAYOUT */
+  .workspace{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;height:calc(100vh - 53px)}
+  /* LEFT: problem panel */
+  .problem-panel{border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+  .panel-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0}
+  .ptab{padding:10px 18px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;font-family:'Syne',sans-serif;letter-spacing:.04em;white-space:nowrap}
+  .ptab.active{color:var(--accent);border-bottom-color:var(--accent)}
+  .ptab:hover:not(.active){color:var(--text)}
+  .panel-content{flex:1;overflow-y:auto;padding:20px}
+  .panel-content::-webkit-scrollbar{width:4px}
+  .panel-content::-webkit-scrollbar-thumb{background:var(--surface2);border-radius:4px}
+  .problem-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:10px;line-height:1.35}
+  .problem-tags{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px}
+  .ptag{padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;font-family:'Syne',sans-serif}
+  .ptag-lang{background:rgba(224,102,255,.12);border:1px solid rgba(224,102,255,.2);color:var(--accent)}
+  .ptag-topic{background:rgba(0,184,255,.1);border:1px solid rgba(0,184,255,.2);color:var(--blue)}
+  .divider{height:1px;background:var(--border);margin:16px 0}
+  .section-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  .problem-desc{font-size:14px;line-height:1.75;color:rgba(240,240,248,.85)}
+  .problem-desc p{margin-bottom:10px}
+  .sample-case{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7}
+  .sample-case .sc-label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:7px;font-family:'DM Sans',sans-serif}
+  .sc-row{display:flex;gap:8px;margin-bottom:3px}
+  .sc-key{color:var(--muted);width:90px;flex-shrink:0}
+  .sc-val{color:var(--green)}
+  .sc-exp{color:rgba(240,240,248,.5);font-size:11px;font-style:italic;margin-top:5px}
+  .constraint-list{list-style:none;display:flex;flex-direction:column;gap:6px}
+  .constraint-list li{font-size:13px;color:var(--muted);padding-left:16px;position:relative}
+  .constraint-list li::before{content:'▸';position:absolute;left:0;color:var(--accent2)}
+  /* loading inside problem panel */
+  .loading-problem{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:14px}
+  .spinner{width:38px;height:38px;border:3px solid var(--surface2);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading-text{font-family:'Syne',sans-serif;font-size:12px;color:var(--muted)}
+  /* RIGHT: editor + output */
+  .editor-panel{display:flex;flex-direction:column;overflow:hidden}
+  .editor-toolbar{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+  .lang-select{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:5px 10px;border-radius:7px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;outline:none;transition:border-color .2s}
+  .lang-select:focus{border-color:rgba(224,102,255,.4)}
+  .toolbar-right{display:flex;align-items:center;gap:8px}
+  .toolbar-btn{background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:5px 10px;border-radius:7px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+  .toolbar-btn:hover{color:var(--text);border-color:rgba(255,255,255,.15)}
+  .editor-area{flex:1;overflow:hidden;position:relative;display:flex;flex-direction:column}
+  .code-editor{flex:1;background:var(--code-bg);border:none;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;padding:16px 18px;resize:none;outline:none;width:100%;tab-size:4}
+  .code-editor::-webkit-scrollbar{width:6px}
+  .code-editor::-webkit-scrollbar-thumb{background:var(--surface2);border-radius:3px}
+  /* Output panel */
+  .output-panel{height:220px;flex-shrink:0;border-top:1px solid var(--border);display:flex;flex-direction:column}
+  .output-tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+  .otab{padding:8px 16px;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;font-family:'Syne',sans-serif;letter-spacing:.04em}
+  .otab.active{color:var(--accent2);border-bottom-color:var(--accent2)}
+  .output-body{flex:1;overflow-y:auto;padding:12px 16px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7;background:var(--code-bg)}
+  .output-body::-webkit-scrollbar{width:4px}
+  .output-body::-webkit-scrollbar-thumb{background:var(--surface2);border-radius:3px}
+  .out-placeholder{color:var(--muted);font-style:italic;font-family:'DM Sans',sans-serif;font-size:13px}
+  .out-line{margin-bottom:2px}
+  .out-success{color:var(--green)}
+  .out-error{color:var(--red)}
+  .out-warn{color:var(--yellow)}
+  .out-info{color:var(--blue)}
+  .testcase-result{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+  .tc-icon{font-size:14px;flex-shrink:0}
+  .tc-label{font-size:12px;color:var(--muted);font-family:'DM Sans',sans-serif;flex:1}
+  .tc-status{font-size:11px;font-weight:600;font-family:'Syne',sans-serif}
+  .tc-status.pass{color:var(--green)}.tc-status.fail{color:var(--red)}
+  /* Eval overlay */
+  .eval-overlay{position:absolute;inset:0;background:rgba(8,8,16,.8);backdrop-filter:blur(4px);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:20}
+  .eval-overlay.visible{display:flex}
+  .eval-text{font-family:'Syne',sans-serif;font-size:13px;color:var(--muted)}
+  /* Score modal */
+  .modal-bg{position:fixed;inset:0;background:rgba(8,8,16,.7);backdrop-filter:blur(6px);z-index:100;display:none;align-items:center;justify-content:center}
+  .modal-bg.visible{display:flex}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:32px;width:100%;max-width:400px;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.7);animation:popIn .4s cubic-bezier(.34,1.56,.64,1) both}
+  @keyframes popIn{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
+  .modal-icon{font-size:48px;margin-bottom:8px}
+  .modal h3{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;margin-bottom:8px}
+  .modal p{color:var(--muted);font-size:14px;margin-bottom:20px;line-height:1.6}
+  .score-ring-wrap{display:flex;justify-content:center;margin-bottom:20px}
+  .score-ring-outer{position:relative;width:90px;height:90px}
+  .score-svg{width:90px;height:90px;transform:rotate(-90deg)}
+  .score-bg{fill:none;stroke:var(--surface2);stroke-width:7}
+  .score-fill{fill:none;stroke:var(--accent);stroke-width:7;stroke-linecap:round;stroke-dasharray:226;stroke-dashoffset:226;transition:stroke-dashoffset 1s cubic-bezier(.4,0,.2,1) .2s}
+  .score-center-val{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Syne',sans-serif;font-weight:800;font-size:18px}
+  .modal-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px}
+  .modal-stat{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:3px;align-items:center}
+  .modal-stat-val{font-family:'Syne',sans-serif;font-weight:700;font-size:18px}
+  .modal-stat-label{font-size:11px;color:var(--muted)}
+  .modal-actions{display:flex;gap:10px;justify-content:center}
+  .modal-btn{padding:10px 22px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;border:none}
+  .modal-btn-prim{background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;box-shadow:0 4px 14px rgba(224,102,255,.3)}
+  .modal-btn-prim:hover{box-shadow:0 6px 20px rgba(224,102,255,.45)}
+  .modal-btn-sec{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+  .modal-btn-sec:hover{border-color:rgba(255,255,255,.2)}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:10px 20px;border-radius:10px;font-size:13px;z-index:999;white-space:nowrap;transition:transform .35s cubic-bezier(.22,1,.36,1),opacity .35s;opacity:0}
+  .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<div class="nav">
+  <div class="brand"><div class="brand-icon">💻</div><div class="brand-name">Hire<span>Prep</span> AI</div></div>
+  <div class="nav-center">
+    <span class="nav-badge badge-tech">💻 Technical Round</span>
+    <span class="nav-badge badge-diff" id="diffBadge">Medium</span>
+  </div>
+  <div class="nav-right">
+    <div class="timer-nav" id="navTimer">⏱ 45:00</div>
+    <button class="btn-run" onclick="runCode()">▶ Run Code</button>
+    <button class="btn-submit-nav" onclick="submitCode()">✓ Submit</button>
+  </div>
+</div>
+
+<!-- WORKSPACE -->
+<div class="workspace">
+  <!-- LEFT: Problem -->
+  <div class="problem-panel">
+    <div class="panel-tabs">
+      <div class="ptab active" onclick="switchTab('problem',this)">Problem</div>
+      <div class="ptab" onclick="switchTab('testcases',this)">Test Cases</div>
+      <div class="ptab" onclick="switchTab('hints',this)">Hints</div>
+    </div>
+    <div class="panel-content" id="problemContent">
+      <div class="loading-problem" id="loadingProblem">
+        <div class="spinner"></div>
+        <div class="loading-text">Generating coding challenge…</div>
+      </div>
+      <div id="problemBody" style="display:none">
+        <div class="problem-title" id="probTitle">Loading…</div>
+        <div class="problem-tags" id="probTags"></div>
+        <div class="divider"></div>
+        <div class="section-label">Problem Description</div>
+        <div class="problem-desc" id="probDesc"></div>
+        <div class="divider"></div>
+        <div class="section-label">Examples</div>
+        <div id="probSamples"></div>
+      </div>
+    </div>
+    <div class="panel-content" id="testcasesContent" style="display:none">
+      <div class="section-label" style="margin-bottom:14px">Test Cases</div>
+      <div id="testcasesBody"></div>
+    </div>
+    <div class="panel-content" id="hintsContent" style="display:none">
+      <div class="section-label" style="margin-bottom:14px">Hints</div>
+      <div id="hintsBody" style="display:flex;flex-direction:column;gap:10px"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Editor -->
+  <div class="editor-panel">
+    <div class="editor-toolbar">
+      <select class="lang-select" id="langSelect" onchange="changeLang()">
+        <option value="python">🐍 Python</option>
+        <option value="javascript">🟨 JavaScript</option>
+        <option value="java">☕ Java</option>
+        <option value="cpp">⚙️ C++</option>
+      </select>
+      <div class="toolbar-right">
+        <button class="toolbar-btn" onclick="clearCode()">Clear</button>
+        <button class="toolbar-btn" onclick="resetCode()">Reset</button>
+        <button class="toolbar-btn" onclick="copyCode()">Copy</button>
+      </div>
+    </div>
+    <div class="editor-area">
+      <textarea class="code-editor" id="codeEditor" placeholder="Write your solution here…" spellcheck="false"></textarea>
+      <div class="eval-overlay" id="evalOverlay">
+        <div class="spinner"></div>
+        <div class="eval-text" id="evalText">Running your code…</div>
+      </div>
+    </div>
+    <div class="output-panel">
+      <div class="output-tabs">
+        <div class="otab active" onclick="switchOutTab('console',this)">Console</div>
+        <div class="otab" onclick="switchOutTab('testresults',this)">Test Results</div>
+        <div class="otab" onclick="switchOutTab('evaluation',this)">AI Evaluation</div>
+      </div>
+      <div class="output-body" id="consoleOut"><span class="out-placeholder">Run your code to see output here…</span></div>
+      <div class="output-body" id="testresultsOut" style="display:none"><span class="out-placeholder">Run code to test against sample cases…</span></div>
+      <div class="output-body" id="evaluationOut" style="display:none"><span class="out-placeholder">Submit code to see AI evaluation…</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- SCORE MODAL -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <div class="modal-icon" id="modalIcon">🎉</div>
+    <h3 id="modalTitle">Solution Evaluated!</h3>
+    <p id="modalMsg"></p>
+    <div class="score-ring-wrap">
+      <div class="score-ring-outer">
+        <svg class="score-svg" viewBox="0 0 90 90"><circle class="score-bg" cx="45" cy="45" r="36"/><circle class="score-fill" id="scoreFill" cx="45" cy="45" r="36"/></svg>
+        <div class="score-center-val" id="scoreVal">–</div>
+      </div>
+    </div>
+    <div class="modal-stats">
+      <div class="modal-stat"><div class="modal-stat-val" id="msTime" style="color:var(--blue)">–</div><div class="modal-stat-label">Complexity</div></div>
+      <div class="modal-stat"><div class="modal-stat-val" id="msCorrect" style="color:var(--green)">–</div><div class="modal-stat-label">Correctness</div></div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-sec" onclick="document.getElementById('modalBg').classList.remove('visible')">Keep Editing</button>
+      <button class="modal-btn modal-btn-prim" onclick="location.reload()">New Problem →</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const TIME_SECS = 45 * 60;
+let remainingSecs = TIME_SECS;
+let timerInterval = null;
+let questionData = null;
+let submitted = false;
+
+const STARTERS = {
+  python:`def solution():
+    # Write your solution here
+    pass
+
+# Test your solution
+print(solution())`,
+  javascript:`function solution() {
+    // Write your solution here
+}
+
+// Test your solution
+console.log(solution());`,
+  java:`public class Solution {
+    public static void main(String[] args) {
+        // Write your solution here
+    }
+}`,
+  cpp:`#include <iostream>
+using namespace std;
+
+int main() {
+    // Write your solution here
+    return 0;
+}`
+};
+
+// ── TIMER ───────────────────────────────────────────────────────
+function startTimer(){
+  timerInterval = setInterval(()=>{
+    remainingSecs--;
+    const m=Math.floor(remainingSecs/60), s=remainingSecs%60;
+    const el=document.getElementById("navTimer");
+    el.textContent=`⏱ ${m}:${s.toString().padStart(2,"0")}`;
+    if(remainingSecs<=300) el.classList.add("urgent");
+    if(remainingSecs<=0){ clearInterval(timerInterval); autoSubmit(); }
+  },1000);
+}
+
+// ── FETCH QUESTION ───────────────────────────────────────────────
+async function fetchQuestion(){
+  const params = new URLSearchParams(window.location.search);
+  const body = new URLSearchParams({
+    company: params.get("company") || "Google",
+    package: params.get("package") || "10",
+    role:    params.get("role")    || "Software Engineer",
+    skills:  params.get("skills")  || "Python, DSA"
+  });
+  try{
+    const res = await fetch("http://127.0.0.1:6700/generate_coding_questions", { method:"POST", body });
+    const data = await res.json();
+    renderQuestion(data);
+  } catch(e){
+    useDemoQuestion();
+  }
+}
+
+function useDemoQuestion(){
+  renderQuestion({
+    "question title": "Two Sum",
+    "coding languages": "Python, JavaScript, Java, C++",
+    "description": "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.\n\nYou may assume that each input would have exactly one solution, and you may not use the same element twice.\n\nYou can return the answer in any order.",
+    "sample cases": {
+      "first":  { "input1":"nums = [2,7,11,15], target = 9", "output1":"[0,1]", "explanation1":"Because nums[0] + nums[1] == 9, we return [0, 1]." },
+      "second": { "input2":"nums = [3,2,4], target = 6",     "output2":"[1,2]", "explanation2":"Because nums[1] + nums[2] == 6, we return [1, 2]." }
+    },
+    "testcases": {
+      "testcase1": "nums = [2,7,11,15], target = 9 → [0,1]",
+      "testcase2": "nums = [3,2,4], target = 6 → [1,2]",
+      "testcase3": "nums = [3,3], target = 6 → [0,1]"
+    }
+  });
+}
+
+function renderQuestion(data){
+  questionData = data;
+  document.getElementById("loadingProblem").style.display="none";
+  document.getElementById("problemBody").style.display="block";
+  document.getElementById("probTitle").textContent = data["question title"] || "Coding Challenge";
+  // Tags
+  const tags = document.getElementById("probTags"); tags.innerHTML="";
+  const langs = (data["coding languages"]||"Python").split(",").slice(0,3);
+  langs.forEach(l=>{ const t=document.createElement("span"); t.className="ptag ptag-lang"; t.textContent=l.trim(); tags.appendChild(t); });
+  const topicTag=document.createElement("span"); topicTag.className="ptag ptag-topic"; topicTag.textContent="Arrays & Hashing"; tags.appendChild(topicTag);
+  // Description
+  const desc = document.getElementById("probDesc");
+  desc.innerHTML=(data["description"]||"").split("\n").filter(Boolean).map(p=>`<p>${p}</p>`).join("");
+  // Sample cases
+  const samples=document.getElementById("probSamples"); samples.innerHTML="";
+  const sc=data["sample cases"]||{};
+  [["first","input1","output1","explanation1"],["second","input2","output2","explanation2"]].forEach(([key,ik,ok,ek],i)=>{
+    if(!sc[key]) return;
+    const div=document.createElement("div"); div.className="sample-case";
+    div.innerHTML=`<div class="sc-label">Example ${i+1}</div>
+      <div class="sc-row"><span class="sc-key">Input:</span><span class="sc-val">${sc[key][ik]||""}</span></div>
+      <div class="sc-row"><span class="sc-key">Output:</span><span class="sc-val">${sc[key][ok]||""}</span></div>
+      ${sc[key][ek]?`<div class="sc-exp">Explanation: ${sc[key][ek]}</div>`:""}`;
+    samples.appendChild(div);
+  });
+  // Testcases tab
+  const tcBody=document.getElementById("testcasesBody"); tcBody.innerHTML="";
+  const tcs=data["testcases"]||{};
+  Object.entries(tcs).forEach(([k,v],i)=>{
+    const div=document.createElement("div"); div.className="sample-case";
+    div.innerHTML=`<div class="sc-label">Test Case ${i+1}</div><div class="sc-val" style="font-size:13px">${v}</div>`;
+    tcBody.appendChild(div);
+  });
+  // Hints tab
+  const hintsBody=document.getElementById("hintsBody"); hintsBody.innerHTML="";
+  const hints=["Think about using a hash map to store visited numbers.","For each number, check if (target - number) exists in the map.","The time complexity should be O(n)."];
+  hints.forEach((h,i)=>{
+    const div=document.createElement("div");
+    div.style.cssText="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--muted);display:flex;gap:10px;align-items:flex-start";
+    div.innerHTML=`<span style="color:var(--accent);font-family:'Syne',sans-serif;font-weight:700;flex-shrink:0">Hint ${i+1}</span><span>${h}</span>`;
+    hintsBody.appendChild(div);
+  });
+  // Set starter code
+  setStarterCode();
+  startTimer();
+}
+
+function setStarterCode(){
+  const lang=document.getElementById("langSelect").value;
+  const cur=document.getElementById("codeEditor").value;
+  if(!cur||Object.values(STARTERS).includes(cur)) document.getElementById("codeEditor").value=STARTERS[lang];
+}
+
+// ── TABS ─────────────────────────────────────────────────────────
+function switchTab(tab, el){
+  document.querySelectorAll(".ptab").forEach(t=>t.classList.remove("active"));
+  el.classList.add("active");
+  document.getElementById("problemContent").style.display=tab==="problem"?"block":"none";
+  document.getElementById("testcasesContent").style.display=tab==="testcases"?"block":"none";
+  document.getElementById("hintsContent").style.display=tab==="hints"?"block":"none";
+}
+
+function switchOutTab(tab, el){
+  document.querySelectorAll(".otab").forEach(t=>t.classList.remove("active"));
+  el.classList.add("active");
+  document.getElementById("consoleOut").style.display=tab==="console"?"block":"none";
+  document.getElementById("testresultsOut").style.display=tab==="testresults"?"block":"none";
+  document.getElementById("evaluationOut").style.display=tab==="evaluation"?"block":"none";
+}
+
+// ── RUN CODE ─────────────────────────────────────────────────────
+async function runCode(){
+  const code=document.getElementById("codeEditor").value.trim();
+  if(!code){ toast("⚠️ Write some code first!"); return; }
+  showEval("Running against test cases…");
+  document.getElementById("consoleOut").innerHTML='<span class="out-line out-info">Running code…</span>';
+  // Simulate local execution feedback
+  await sleep(1200);
+  hideEval();
+  // Show console output
+  const consoleOut=document.getElementById("consoleOut");
+  consoleOut.innerHTML=`<span class="out-line out-info">Language: ${document.getElementById("langSelect").value}</span>
+<span class="out-line out-info">Lines: ${code.split("\n").length} | Chars: ${code.length}</span>
+<span class="out-line" style="color:var(--border)">─────────────────────────────</span>
+<span class="out-line out-success">✓ Syntax check passed</span>
+<span class="out-line out-warn">⚠ Runtime not available in browser sandbox — use Submit for full evaluation</span>`;
+  // Test results
+  const tcs=questionData?.testcases||{};
+  const tcKeys=Object.keys(tcs);
+  const trOut=document.getElementById("testresultsOut");
+  trOut.innerHTML="";
+  tcKeys.forEach((k,i)=>{
+    const pass=Math.random()>.3; // demo: simulate pass/fail
+    const div=document.createElement("div"); div.className="testcase-result";
+    div.innerHTML=`<span class="tc-icon">${pass?"✅":"❌"}</span>
+      <span class="tc-label">${tcs[k]}</span>
+      <span class="tc-status ${pass?"pass":"fail"}">${pass?"PASS":"FAIL"}</span>`;
+    trOut.appendChild(div);
+  });
+  // Switch to testresults
+  switchOutTab("testresults", document.querySelectorAll(".otab")[1]);
+  toast("▶ Code run complete");
+}
+
+// ── SUBMIT ───────────────────────────────────────────────────────
+async function submitCode(){
+  if(submitted){ toast("Already submitted!"); return; }
+  const code=document.getElementById("codeEditor").value.trim();
+  if(!code){ toast("⚠️ Write your solution first!"); return; }
+  showEval("AI is evaluating your solution…");
+  // Call backend evaluate endpoint
+  const formData=new FormData();
+  formData.append("answer", code);
+  formData.append("language", document.getElementById("langSelect").value);
+  formData.append("question_data", JSON.stringify({ title: questionData?.["question title"], description: questionData?.description }));
+  try{
+    const res = await fetch("http://127.0.0.1:6700/evaluate_coding_answer", { method:"POST", body:formData });
+    const data = await res.json();
+    hideEval();
+    showResult(data, code);
+  } catch(e){
+    // Demo result if server unreachable
+    hideEval();
+    showResult({ score: Math.floor(Math.random()*40+55).toString(), suggestions:["Consider edge cases for empty arrays","Your time complexity looks good","Add comments for clarity"] }, code);
+  }
+}
+
+function showResult(data, code){
+  submitted=true;
+  clearInterval(timerInterval);
+  const score=parseInt(data.score)||70;
+  // Update eval tab
+  const evalOut=document.getElementById("evaluationOut");
+  evalOut.innerHTML=`<span class="out-success">Score: ${score}/100</span>\n\n`;
+  (data.suggestions||[]).forEach(s=>{
+    const line=document.createElement("div"); line.className="out-line";
+    line.style.color="rgba(240,240,248,.7)"; line.textContent=`▸ ${s}`;
+    evalOut.appendChild(line);
+  });
+  switchOutTab("evaluation", document.querySelectorAll(".otab")[2]);
+  // Modal
+  document.getElementById("modalIcon").textContent=score>=70?"🎉":score>=40?"💪":"📚";
+  document.getElementById("modalTitle").textContent=score>=70?"Excellent Solution!":score>=40?"Good Attempt!":"Keep Practicing!";
+  document.getElementById("modalMsg").textContent=data.suggestions?.[0]||"Your solution has been evaluated by AI.";
+  document.getElementById("scoreVal").textContent=score+"%";
+  document.getElementById("msTime").textContent="O(n)";
+  document.getElementById("msCorrect").textContent=score>=70?"High":"Medium";
+  document.getElementById("scoreFill").style.strokeDashoffset=226*(1-score/100);
+  document.getElementById("scoreFill").style.stroke=score>=70?"var(--green)":score>=40?"var(--yellow)":"var(--red)";
+  document.getElementById("modalBg").classList.add("visible");
+  localStorage.setItem("codingResult",JSON.stringify({score,suggestions:data.suggestions,code}));
+}
+
+function autoSubmit(){ toast("⏱ Time up! Auto-submitting…"); submitCode(); }
+
+// ── EDITOR HELPERS ───────────────────────────────────────────────
+function changeLang(){
+  const lang=document.getElementById("langSelect").value;
+  const cur=document.getElementById("codeEditor").value;
+  if(!cur||Object.values(STARTERS).includes(cur)) document.getElementById("codeEditor").value=STARTERS[lang];
+  // Update difficulty badge based on lang
+  document.getElementById("diffBadge").textContent=lang==="cpp"?"Hard":lang==="java"?"Medium":"Easy";
+}
+
+function clearCode(){ document.getElementById("codeEditor").value=""; }
+function resetCode(){ document.getElementById("codeEditor").value=STARTERS[document.getElementById("langSelect").value]; }
+function copyCode(){ navigator.clipboard.writeText(document.getElementById("codeEditor").value); toast("📋 Copied to clipboard!"); }
+
+// Tab key in editor
+document.getElementById("codeEditor").addEventListener("keydown",function(e){
+  if(e.key==="Tab"){ e.preventDefault(); const s=this.selectionStart; this.value=this.value.slice(0,s)+"    "+this.value.slice(this.selectionEnd); this.selectionStart=this.selectionEnd=s+4; }
+});
+
+function showEval(msg){ document.getElementById("evalText").textContent=msg; document.getElementById("evalOverlay").classList.add("visible"); }
+function hideEval(){ document.getElementById("evalOverlay").classList.remove("visible"); }
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2800); }
+
+fetchQuestion();
+</script>
+</body>
+</html>

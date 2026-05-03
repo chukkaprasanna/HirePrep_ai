@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HirePrep AI — Voice & Video Interview</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#0a0a0f; --surface:#111118; --surface2:#1a1a26;
+    --border:rgba(255,255,255,0.07); --accent:#7c6af7; --accent2:#e066ff;
+    --green:#22d9a0; --red:#ff4f6a; --yellow:#f5c542; --text:#f0f0f8; --muted:#6b6b8a;
+  }
+  html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden;overflow-y:auto;min-height:100%}
+  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 50% at 80% 10%,rgba(124,106,247,.13) 0%,transparent 60%),radial-gradient(ellipse 40% 40% at 10% 80%,rgba(224,102,255,.09) 0%,transparent 60%);pointer-events:none;z-index:0}
+  body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,.015) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.015) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+  .app{position:relative;z-index:1;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:24px 16px 56px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:24px;width:100%;max-width:680px;padding:32px;box-shadow:0 0 0 1px rgba(124,106,247,.1),0 32px 80px rgba(0,0,0,.6);animation:cardIn .6s cubic-bezier(.22,1,.36,1) both}
+  @keyframes cardIn{from{opacity:0;transform:translateY(24px) scale(.98)}to{opacity:1;transform:none}}
+  .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+  .brand{display:flex;align-items:center;gap:10px}
+  .brand-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px}
+  .brand-name{font-family:'Syne',sans-serif;font-weight:700;font-size:15px}
+  .brand-name span{color:var(--accent)}
+  .q-counter{font-family:'Syne',sans-serif;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+  .progress-wrap{margin-bottom:22px}
+  .progress-track{height:3px;background:var(--surface2);border-radius:99px;overflow:hidden}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:99px;transition:width .5s cubic-bezier(.4,0,.2,1);box-shadow:0 0 12px rgba(124,106,247,.6)}
+  .progress-labels{display:flex;justify-content:space-between;margin-top:7px}
+  .progress-labels span{font-size:11px;color:var(--muted)}
+  .question-row{display:flex;align-items:flex-start;gap:14px;margin-bottom:18px}
+  .avatar-wrap{position:relative;flex-shrink:0}
+  .avatar{width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 0 0 3px var(--bg),0 0 0 4px rgba(124,106,247,.3)}
+  .avatar-ring{position:absolute;inset:-5px;border-radius:50%;border:2px solid transparent;background:linear-gradient(var(--bg),var(--bg)) padding-box,linear-gradient(135deg,var(--accent),var(--accent2)) border-box;opacity:0;transition:opacity .3s}
+  .avatar-ring.active{opacity:1;animation:pulse-ring 1.5s ease-in-out infinite}
+  @keyframes pulse-ring{0%,100%{transform:scale(1);opacity:.8}50%{transform:scale(1.06);opacity:.4}}
+  .question-area{flex:1}
+  .question-label{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:5px}
+  .question-text{font-family:'Syne',sans-serif;font-size:16px;font-weight:600;line-height:1.45;transition:opacity .25s,transform .25s}
+  .question-text.fade{opacity:0;transform:translateY(6px)}
+  .video-panel{background:var(--surface2);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:14px}
+  .video-header{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;border-bottom:1px solid var(--border)}
+  .video-header-left{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:500;color:var(--muted)}
+  .rec-indicator{width:8px;height:8px;border-radius:50%;background:var(--muted);transition:background .3s}
+  .rec-indicator.live{background:var(--red);animation:blink .8s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+  .cam-toggle{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);cursor:pointer;padding:5px 10px;background:var(--surface);border-radius:8px;border:1px solid var(--border);transition:all .2s;white-space:nowrap}
+  .cam-toggle:hover{border-color:rgba(124,106,247,.4);color:var(--text)}
+  .cam-toggle.on{color:var(--green);border-color:rgba(34,217,160,.3);background:rgba(34,217,160,.05)}
+  .video-body{position:relative;background:#060608;display:flex;align-items:center;justify-content:center;height:200px}
+  video#camPreview{width:100%;height:100%;object-fit:cover;display:none;transform:scaleX(-1)}
+  video#camPreview.visible{display:block}
+  .cam-placeholder{display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--muted);font-size:13px}
+  .cam-placeholder-icon{width:48px;height:48px;border-radius:50%;background:var(--surface);border:1px dashed rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:20px}
+  /* small ring (video mode) */
+  .countdown-wrap{position:absolute;top:10px;left:12px;display:none;align-items:center;gap:8px}
+  .countdown-wrap.visible{display:flex}
+  .ring-outer{position:relative;width:50px;height:50px;flex-shrink:0}
+  .ring-svg{width:50px;height:50px;transform:rotate(-90deg)}
+  .ring-bg{fill:none;stroke:rgba(255,255,255,.1);stroke-width:4}
+  .ring-fill{fill:none;stroke:var(--accent2);stroke-width:4;stroke-linecap:round;stroke-dasharray:132;stroke-dashoffset:0;transition:stroke-dashoffset 1s linear,stroke .5s}
+  .ring-fill.warning{stroke:var(--yellow)}
+  .ring-fill.urgent{stroke:var(--red)}
+  .ring-text-wrap{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text)}
+  .snap-badge{background:rgba(0,0,0,.65);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(6px);padding:3px 9px;border-radius:6px;font-size:11px;font-weight:600;color:var(--text);font-family:'Syne',sans-serif;white-space:nowrap}
+  .timer-badge{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.7);border:1px solid rgba(255,79,106,.4);color:var(--red);font-size:12px;font-family:'Syne',sans-serif;font-weight:600;padding:3px 10px;border-radius:6px;display:none;backdrop-filter:blur(6px)}
+  .timer-badge.visible{display:block}
+  .snap-flash{position:absolute;inset:0;background:white;opacity:0;pointer-events:none}
+  .snap-flash.go{animation:flash .25s forwards}
+  @keyframes flash{0%{opacity:.85}100%{opacity:0}}
+  /* voice overlay (audio-only mode) */
+  .voice-overlay{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:rgba(10,10,15,.93);backdrop-filter:blur(4px)}
+  .voice-overlay.visible{display:flex}
+  .big-ring-outer{position:relative;width:80px;height:80px}
+  .big-ring-svg{width:80px;height:80px;transform:rotate(-90deg)}
+  .big-ring-bg{fill:none;stroke:rgba(255,255,255,.08);stroke-width:5}
+  .big-ring-fill{fill:none;stroke:var(--accent2);stroke-width:5;stroke-linecap:round;stroke-dasharray:213.6;stroke-dashoffset:0;transition:stroke-dashoffset 1s linear,stroke .5s}
+  .big-ring-fill.warning{stroke:var(--yellow)}
+  .big-ring-fill.urgent{stroke:var(--red)}
+  .big-ring-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--text)}
+  .waveform-bars{display:none;align-items:flex-end;gap:3px;height:22px}
+  .waveform-bars.visible{display:flex}
+  .wbr{width:3px;border-radius:3px;background:var(--accent2);animation:wv 1s ease-in-out infinite}
+  .wbr:nth-child(1){animation-delay:0s;height:6px}.wbr:nth-child(2){animation-delay:.1s;height:18px}
+  .wbr:nth-child(3){animation-delay:.2s;height:10px}.wbr:nth-child(4){animation-delay:.3s;height:22px}
+  .wbr:nth-child(5){animation-delay:.4s;height:8px}.wbr:nth-child(6){animation-delay:.5s;height:15px}
+  .wbr:nth-child(7){animation-delay:.6s;height:20px}.wbr:nth-child(8){animation-delay:.7s;height:11px}
+  @keyframes wv{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.25)}}
+  .voice-overlay-label{font-size:11px;color:rgba(255,255,255,.5);font-family:'Syne',sans-serif;letter-spacing:.06em}
+  .live-transcript{font-size:11px;color:rgba(255,255,255,.4);max-width:300px;text-align:center;line-height:1.4;min-height:16px;font-style:italic;padding:0 16px}
+  /* collage */
+  .collage-section{display:none;padding:14px;border-top:1px solid var(--border)}
+  .collage-section.visible{display:block}
+  .collage-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .collage-label{font-size:10px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--accent)}
+  .collage-dl-btn{font-size:11px;color:var(--accent);cursor:pointer;border:1px solid rgba(124,106,247,.3);border-radius:7px;padding:4px 10px;background:transparent;transition:all .2s;font-family:'DM Sans',sans-serif}
+  .collage-dl-btn:hover{background:rgba(124,106,247,.1)}
+  /* transcript complete badge */
+  .transcript-done{display:none;padding:8px 14px;border-top:1px solid var(--border);align-items:center;justify-content:space-between;font-size:12px;color:var(--green)}
+  .transcript-done.visible{display:flex}
+  .collage-grid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:5px}
+  .collage-cell{aspect-ratio:16/9;border-radius:8px;background:var(--surface);border:1px solid var(--border);overflow:hidden;position:relative}
+  .collage-cell img{width:100%;height:100%;object-fit:cover;display:block;transform:scaleX(-1);opacity:0}
+  .collage-cell img.loaded{opacity:1;transition:opacity .4s}
+  .cell-label{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.72));font-size:9px;font-weight:600;color:rgba(255,255,255,.8);font-family:'Syne',sans-serif;padding:4px 5px 3px;text-align:center}
+  .cell-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--muted)}
+  @keyframes snapIn{from{transform:scaleX(-1) scale(1.08);opacity:0}to{transform:scaleX(-1) scale(1);opacity:1}}
+  .collage-cell img.snap-anim{animation:snapIn .35s cubic-bezier(.22,1,.36,1) forwards}
+  /* clip row */
+  .clip-row{padding:10px 14px;display:none;align-items:center;gap:10px;border-top:1px solid var(--border)}
+  .clip-row.visible{display:flex}
+  .clip-row video{width:80px;height:50px;object-fit:cover;border-radius:6px;background:#000}
+  .clip-info{flex:1}
+  .clip-info .clip-name{font-size:13px;font-weight:500}
+  .clip-info .clip-dur{font-size:11px;color:var(--muted)}
+  .clip-download{font-size:12px;color:var(--accent);text-decoration:none;border:1px solid rgba(124,106,247,.3);border-radius:7px;padding:5px 10px;transition:all .2s;white-space:nowrap}
+  .clip-download:hover{background:rgba(124,106,247,.1)}
+  /* answer */
+  .answer-wrap{position:relative;margin-bottom:16px}
+  textarea{width:100%;height:115px;background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.6;resize:none;outline:none;transition:border-color .2s,box-shadow .2s}
+  textarea:focus{border-color:rgba(124,106,247,.4);box-shadow:0 0 0 3px rgba(124,106,247,.1)}
+  textarea::placeholder{color:var(--muted)}
+  .char-count{position:absolute;bottom:10px;right:12px;font-size:11px;color:var(--muted)}
+  .transcribe-pill{display:none;align-items:center;gap:6px;position:absolute;top:10px;right:12px;background:rgba(124,106,247,.15);border:1px solid rgba(124,106,247,.3);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--accent)}
+  .transcribe-pill.visible{display:flex}
+  .t-dot{width:6px;height:6px;border-radius:50%;background:var(--accent2);animation:blink .8s infinite}
+  /* controls */
+  .controls{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;margin-bottom:12px}
+  .btn{display:flex;align-items:center;justify-content:center;gap:7px;padding:11px 13px;border:none;border-radius:11px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;transition:all .2s cubic-bezier(.4,0,.2,1);white-space:nowrap}
+  .btn:active{transform:scale(.97)}
+  .btn-voice{background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;box-shadow:0 4px 16px rgba(124,106,247,.35)}
+  .btn-voice:hover{box-shadow:0 6px 24px rgba(124,106,247,.5);transform:translateY(-1px)}
+  .btn-voice.active{background:linear-gradient(135deg,var(--red),#c0392b);box-shadow:0 4px 16px rgba(255,79,106,.4)}
+  .btn-stop{background:var(--surface2);color:var(--red);border:1px solid rgba(255,79,106,.2)}
+  .btn-stop:hover{background:rgba(255,79,106,.08);border-color:rgba(255,79,106,.4)}
+  .btn-video-rec{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+  .btn-video-rec:hover{border-color:rgba(255,79,106,.4);color:var(--red)}
+  .btn-video-rec.active{color:var(--red);border-color:rgba(255,79,106,.4);background:rgba(255,79,106,.07)}
+  .btn-next{background:var(--surface2);color:var(--text);border:1px solid var(--border);padding:11px 18px}
+  .btn-next:hover{background:var(--surface);border-color:rgba(255,255,255,.15)}
+  .rec-dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0}
+  .active .rec-dot{animation:blink .8s infinite}
+  /* status */
+  .status-bar{display:flex;align-items:center;gap:8px;padding:9px 13px;background:var(--surface2);border-radius:10px;font-size:12px;color:var(--muted);border:1px solid var(--border);min-height:36px;transition:all .3s}
+  .status-bar.ok{color:var(--green);border-color:rgba(34,217,160,.2);background:rgba(34,217,160,.05)}
+  .status-bar.err{color:var(--red);border-color:rgba(255,79,106,.2);background:rgba(255,79,106,.05)}
+  .status-bar.rec{color:var(--accent2);border-color:rgba(224,102,255,.2);background:rgba(224,102,255,.05)}
+  .status-bar.warn{color:var(--yellow);border-color:rgba(245,197,66,.2);background:rgba(245,197,66,.05)}
+  .wave-container{display:none;align-items:center;gap:3px;height:18px;margin-left:auto}
+  .wave-container.visible{display:flex}
+  .wave-bar{width:3px;border-radius:3px;background:var(--accent2);animation:wave 1s ease-in-out infinite}
+  .wave-bar:nth-child(1){animation-delay:0s;height:6px}.wave-bar:nth-child(2){animation-delay:.15s;height:14px}
+  .wave-bar:nth-child(3){animation-delay:.3s;height:10px}.wave-bar:nth-child(4){animation-delay:.45s;height:18px}
+  .wave-bar:nth-child(5){animation-delay:.6s;height:8px}.wave-bar:nth-child(6){animation-delay:.75s;height:14px}
+  @keyframes wave{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.3)}}
+  /* done */
+  .done-screen{display:none;flex-direction:column;align-items:center;text-align:center;padding:20px 0;gap:16px}
+  .done-screen.visible{display:flex}
+  .done-icon{width:72px;height:72px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 0 40px rgba(124,106,247,.4);animation:popIn .5s cubic-bezier(.34,1.56,.64,1) both}
+  @keyframes popIn{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+  .done-screen h3{font-family:'Syne',sans-serif;font-size:22px;font-weight:700}
+  .done-screen p{color:var(--muted);font-size:14px;max-width:320px;line-height:1.6}
+  .btn-submit{background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;padding:14px 36px;border-radius:14px;font-size:15px;font-weight:500;box-shadow:0 8px 28px rgba(124,106,247,.4);border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+  .btn-submit:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(124,106,247,.5)}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:10px 20px;border-radius:10px;font-size:13px;z-index:999;white-space:nowrap;transition:transform .35s cubic-bezier(.22,1,.36,1),opacity .35s;opacity:0}
+  .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+  #snapCanvas{display:none}
+</style>
+</head>
+<body>
+<canvas id="snapCanvas"></canvas>
+<div class="app"><div class="card">
+  <div class="header">
+    <div class="brand"><div class="brand-icon">✦</div><div class="brand-name">Hire<span>Prep</span> AI</div></div>
+    <div class="q-counter" id="qCounter">Question 1 of 6</div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:16.6%"></div></div>
+    <div class="progress-labels"><span>Intro</span><span>Skills</span><span>Experience</span><span>Fit</span></div>
+  </div>
+  <div id="interviewBody">
+    <div class="question-row">
+      <div class="avatar-wrap"><div class="avatar">🎙</div><div class="avatar-ring" id="avatarRing"></div></div>
+      <div class="question-area">
+        <div class="question-label">AI Interviewer</div>
+        <div class="question-text" id="questionText">Tell me about yourself.</div>
+      </div>
+    </div>
+    <div class="video-panel">
+      <div class="video-header">
+        <div class="video-header-left"><div class="rec-indicator" id="recIndicator"></div><span id="camStatusLabel">Camera off</span></div>
+        <div class="cam-toggle" id="camToggle" onclick="toggleCamera()">📷 Enable Camera</div>
+      </div>
+      <div class="video-body">
+        <div class="cam-placeholder" id="camPlaceholder"><div class="cam-placeholder-icon">📷</div><span>Enable camera, or click Voice to transcribe</span></div>
+        <video id="camPreview" autoplay muted playsinline></video>
+        <div class="countdown-wrap" id="countdownWrap">
+          <div class="ring-outer">
+            <svg class="ring-svg" viewBox="0 0 50 50"><circle class="ring-bg" cx="25" cy="25" r="21"/><circle class="ring-fill" id="ringFill" cx="25" cy="25" r="21"/></svg>
+            <div class="ring-text-wrap" id="ringText">60</div>
+          </div>
+          <div class="snap-badge" id="snapBadge">📸 0 / 6</div>
+        </div>
+        <div class="timer-badge" id="timerBadge">⏺ 0:00</div>
+        <div class="snap-flash"  id="snapFlash"></div>
+        <div class="voice-overlay" id="voiceOverlay">
+          <div class="big-ring-outer">
+            <svg class="big-ring-svg" viewBox="0 0 80 80"><circle class="big-ring-bg" cx="40" cy="40" r="34"/><circle class="big-ring-fill" id="bigRingFill" cx="40" cy="40" r="34"/></svg>
+            <div class="big-ring-text" id="bigRingText">60</div>
+          </div>
+          <div class="waveform-bars" id="waveformBars"><div class="wbr"></div><div class="wbr"></div><div class="wbr"></div><div class="wbr"></div><div class="wbr"></div><div class="wbr"></div><div class="wbr"></div><div class="wbr"></div></div>
+          <div class="voice-overlay-label" id="voiceLabel">🎙 Recording — speak your answer</div>
+          <div class="live-transcript" id="liveTranscript"></div>
+        </div>
+      </div>
+      <div class="collage-section" id="collageSection">
+        <div class="collage-header">
+          <div class="collage-label">📸 Snapshot Collage — Q<span id="collageQNum">1</span></div>
+          <button class="collage-dl-btn" onclick="downloadCollage()">⬇ Download Collage</button>
+        </div>
+        <div class="collage-grid" id="collageGrid"></div>
+      </div>
+      <div class="clip-row" id="clipRow">
+        <video id="clipPreview" controls></video>
+        <div class="clip-info"><div class="clip-name" id="clipName">Recording</div><div class="clip-dur" id="clipDur">–</div></div>
+        <a class="clip-download" id="clipDownload" download="recording.webm">⬇ Save Video</a>
+      </div>
+      <!-- transcript badge shown after voice session ends -->
+      <div class="transcript-done" id="transcriptDone">
+        <span>✅ Transcription complete</span><span id="transcriptWordCount"></span>
+      </div>
+    </div>
+    <div class="answer-wrap">
+      <textarea id="answer" placeholder="Your answer will be transcribed here live as you speak, or type directly…"></textarea>
+      <div class="transcribe-pill" id="transcribePill"><div class="t-dot"></div> Transcribing…</div>
+      <div class="char-count" id="charCount">0 words</div>
+    </div>
+    <div class="controls">
+      <button class="btn btn-voice" id="btnVoice" onclick="toggleVoice()"><span class="rec-dot"></span><span id="btnVoiceLabel">🎙 Voice</span></button>
+      <button class="btn btn-stop" onclick="stopAll()">⏹ Stop</button>
+      <button class="btn btn-video-rec" id="btnVideoRec" onclick="toggleVideoRec()">🔴 Record</button>
+      <button class="btn btn-next" onclick="nextQuestion()">Next →</button>
+    </div>
+    <div class="status-bar" id="statusBar">
+      <span id="statusIcon">💬</span>
+      <span id="statusText">Click 🎙 Voice to start transcribing, or enable camera for video</span>
+      <div class="wave-container" id="waveContainer"><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div></div>
+    </div>
+  </div>
+  <div class="done-screen" id="doneScreen">
+    <div class="done-icon">✓</div>
+    <h3>Interview Complete!</h3>
+    <p>All 6 questions answered. Submit for your AI-powered feedback report.</p>
+    <button class="btn-submit" onclick="submitAnswers()">Submit for Feedback →</button>
+  </div>
+</div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const TOTAL_SECS=60, MAX_SNAPS=6;
+const SNAP_AT=[0,12,24,36,48,60], SNAP_LABELS=["0s","12s","24s","36s","48s","60s"];
+const CIRC_SM=2*Math.PI*21, CIRC_BIG=2*Math.PI*34;
+const QUESTIONS=["Tell me about yourself.","What technical skills do you have?","Walk me through a project you're proud of.","What would you say is your greatest strength?","What's an area you're actively working to improve?","Why should we choose you for this role?"];
+
+let qIndex=0, interviewAnswers=[];
+let cameraOn=false, videoRecording=false, voiceActive=false;
+let camStream=null;
+let vidRecorder=null, vidChunks=[], vidSecs=0, vidTimer=null;
+let clipBlobs=new Array(QUESTIONS.length);
+let sessionInterval=null, sessionSecs=0, sessionMode="", snapsTaken=0;
+let allSnaps=Array.from({length:QUESTIONS.length},()=>[]);
+
+// Speech recognition state
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let recognition=null, recRunning=false, recRestartTimer=null;
+let accumulated=""; // all final transcripts concatenated
+
+/* ── RECOGNITION ENGINE ──
+   Uses continuous+interimResults.
+   On every "end" (silence timeout, network, etc.)
+   we restart if voiceActive is still true.
+   This ensures recording never stops for silence.
+*/
+function buildRecognition(){
+  if(!SR) return null;
+  const r=new SR();
+  r.lang="en-US"; r.continuous=true; r.interimResults=true;
+  r.onresult=(e)=>{
+    let interim="";
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      const txt=e.results[i][0].transcript;
+      if(e.results[i].isFinal){
+        accumulated+=(accumulated?" ":"")+txt.trim();
+        document.getElementById("answer").value=accumulated;
+        updateWordCount();
+      } else { interim+=txt; }
+    }
+    const lt=document.getElementById("liveTranscript");
+    lt.textContent=interim?`"${interim}"`:"";
+  };
+  r.onend=()=>{ recRunning=false; if(voiceActive) scheduleRestart(); };
+  r.onerror=(e)=>{ recRunning=false; if(voiceActive) scheduleRestart(); };
+  return r;
+}
+function scheduleRestart(){ recRestartTimer=setTimeout(()=>{ if(voiceActive&&sessionInterval!==null) startRec(); },120); }
+function startRec(){ if(!recognition) recognition=buildRecognition(); if(recognition&&!recRunning){ try{recognition.start();recRunning=true;}catch(e){} } }
+function killRecognition(){ voiceActive=false; recRunning=false; clearTimeout(recRestartTimer); if(recognition){try{recognition.stop();}catch(e){} recognition=null;} }
+
+/* ── VOICE BUTTON ── */
+async function toggleVoice(){ voiceActive?endVoice():await startVoice(); }
+
+async function startVoice(){
+  if(!SR){setStatus("err","⚠️","Speech recognition not supported in this browser");return;}
+  try{ await navigator.mediaDevices.getUserMedia({audio:true}); }catch(e){setStatus("err","⚠️","Microphone permission denied");return;}
+  voiceActive=true;
+  accumulated=document.getElementById("answer").value;
+  startRec();
+  document.getElementById("btnVoice").classList.add("active");
+  document.getElementById("btnVoiceLabel").textContent="⏹ Stop";
+  document.getElementById("avatarRing").classList.add("active");
+  document.getElementById("waveContainer").classList.add("visible");
+  document.getElementById("transcribePill").classList.add("visible");
+  document.getElementById("recIndicator").classList.add("live");
+  if(!cameraOn){ document.getElementById("voiceOverlay").classList.add("visible"); document.getElementById("waveformBars").classList.add("visible"); }
+  startSessionTimer("voice");
+  setStatus("rec","🎙","Recording & transcribing for 60s — speak naturally, silence is fine");
+}
+
+function endVoice(fromTimer=false){
+  killRecognition();
+  document.getElementById("btnVoice").classList.remove("active");
+  document.getElementById("btnVoiceLabel").textContent="🎙 Voice";
+  document.getElementById("avatarRing").classList.remove("active");
+  document.getElementById("waveContainer").classList.remove("visible");
+  document.getElementById("transcribePill").classList.remove("visible");
+  document.getElementById("voiceOverlay").classList.remove("visible");
+  document.getElementById("waveformBars").classList.remove("visible");
+  document.getElementById("liveTranscript").textContent="";
+  if(!videoRecording){ document.getElementById("recIndicator").classList.remove("live"); document.getElementById("camStatusLabel").textContent=cameraOn?"Camera ready":"Camera off"; }
+  if(!fromTimer) stopSessionTimer();
+  // Show transcript-done badge with word count
+  const words = document.getElementById("answer").value.trim().split(/\s+/).filter(Boolean).length;
+  if(words > 0){
+    document.getElementById("transcriptWordCount").textContent = words + " words transcribed";
+    document.getElementById("transcriptDone").classList.add("visible");
+  }
+  if(!fromTimer) setStatus("ok","✍️","Transcription complete — review and edit, then click Next");
+}
+
+/* ── CAMERA ── */
+async function toggleCamera(){
+  if(!cameraOn){
+    try{
+      camStream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+      const v=document.getElementById("camPreview"); v.srcObject=camStream; v.classList.add("visible");
+      document.getElementById("camPlaceholder").style.display="none";
+      cameraOn=true; document.getElementById("camToggle").textContent="📷 Disable Camera";
+      document.getElementById("camToggle").classList.add("on"); document.getElementById("camStatusLabel").textContent="Camera ready";
+      setStatus("ok","📷","Camera live — click 🔴 Record for video, or 🎙 Voice to transcribe"); toast("📷 Camera enabled");
+    }catch(e){setStatus("err","⚠️","Camera access denied: "+e.message);}
+  } else stopCamera();
+}
+function stopCamera(){
+  if(videoRecording) stopVideoRec();
+  if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
+  const v=document.getElementById("camPreview"); v.srcObject=null; v.classList.remove("visible");
+  document.getElementById("camPlaceholder").style.display="flex";
+  document.getElementById("countdownWrap").classList.remove("visible");
+  cameraOn=false; document.getElementById("camToggle").textContent="📷 Enable Camera";
+  document.getElementById("camToggle").classList.remove("on"); document.getElementById("camStatusLabel").textContent="Camera off";
+  toast("Camera disabled");
+}
+
+/* ── SNAPSHOT ── */
+function takeSnap(idx){
+  if(!cameraOn) return;
+  const v=document.getElementById("camPreview"), cv=document.getElementById("snapCanvas");
+  cv.width=v.videoWidth||640; cv.height=v.videoHeight||360;
+  const ctx=cv.getContext("2d"); ctx.save(); ctx.scale(-1,1); ctx.drawImage(v,-cv.width,0,cv.width,cv.height); ctx.restore();
+  const url=cv.toDataURL("image/jpeg",.88); allSnaps[qIndex][idx]=url;
+  const cell=document.getElementById("cell"+idx); cell.innerHTML="";
+  const img=document.createElement("img"); img.src=url; img.classList.add("snap-anim"); img.onload=()=>img.classList.add("loaded");
+  const lbl=document.createElement("div"); lbl.className="cell-label"; lbl.textContent=SNAP_LABELS[idx];
+  cell.appendChild(img); cell.appendChild(lbl);
+  snapsTaken=idx+1; document.getElementById("snapBadge").textContent=`📸 ${snapsTaken} / ${MAX_SNAPS}`;
+  const fl=document.getElementById("snapFlash"); fl.classList.remove("go"); void fl.offsetWidth; fl.classList.add("go");
+  toast(`📸 Snap ${snapsTaken}/6 — ${SNAP_LABELS[idx]}`);
+}
+
+/* ── SESSION TIMER ── */
+function startSessionTimer(mode){
+  // Guard: never run two session timers simultaneously
+  if(sessionInterval){ clearInterval(sessionInterval); sessionInterval=null; }
+  sessionMode=mode; sessionSecs=0; snapsTaken=0;
+  // Tracks which snap indices have already fired to prevent duplicates
+  const snapFired=new Set();
+  if(mode==="video"){
+    allSnaps[qIndex]=[]; buildCollageCells();
+    document.getElementById("collageSection").classList.add("visible");
+    document.getElementById("snapBadge").textContent="📸 0 / 6";
+    document.getElementById("countdownWrap").classList.add("visible");
+    resetSR();
+    // Snap at t=0 immediately (index 0)
+    snapFired.add(0); takeSnap(0);
+  } else resetBR();
+
+  sessionInterval=setInterval(()=>{
+    sessionSecs++; const rem=TOTAL_SECS-sessionSecs;
+
+    if(mode==="video"){
+      const off=CIRC_SM*(sessionSecs/TOTAL_SECS), ring=document.getElementById("ringFill");
+      ring.style.strokeDashoffset=off; document.getElementById("ringText").textContent=rem;
+      ring.classList.remove("warning","urgent");
+      if(rem<=10) ring.classList.add("urgent"); else if(rem<=20) ring.classList.add("warning");
+
+      // Snaps at indices 1-4 (12s,24s,36s,48s) — check exact match & not already fired
+      const si=SNAP_AT.indexOf(sessionSecs);
+      if(si>=1 && si<=4 && !snapFired.has(si)){ snapFired.add(si); takeSnap(si); }
+    } else {
+      const off=CIRC_BIG*(sessionSecs/TOTAL_SECS), ring=document.getElementById("bigRingFill");
+      ring.style.strokeDashoffset=off; document.getElementById("bigRingText").textContent=rem;
+      ring.classList.remove("warning","urgent");
+      if(rem<=10) ring.classList.add("urgent"); else if(rem<=20) ring.classList.add("warning");
+      document.getElementById("voiceLabel").textContent=rem<=10?"⏰ Wrapping up…":"🎙 Recording — speak your answer";
+    }
+
+    if(rem===30) setStatus("warn","⏳","30 seconds remaining");
+    if(rem===10) setStatus("err","🔴","10 seconds left — wrap up!");
+
+    if(sessionSecs>=TOTAL_SECS){
+      clearInterval(sessionInterval); sessionInterval=null;
+      if(mode==="video"){
+        // Final snap at 60s (index 5) — only once
+        if(!snapFired.has(5)){ snapFired.add(5); takeSnap(5); }
+        document.getElementById("ringText").textContent="0";
+        document.getElementById("countdownWrap").classList.remove("visible");
+        if(videoRecording) stopVideoRec(true);
+      } else {
+        document.getElementById("bigRingText").textContent="0";
+        if(voiceActive) endVoice(true);
+      }
+      setStatus("ok","✅","60s complete — review your answer and click Next");
+      toast("⏱ Time's up — recording stopped");
+    }
+  },1000);
+}
+function stopSessionTimer(){ if(sessionInterval){clearInterval(sessionInterval);sessionInterval=null;} document.getElementById("countdownWrap").classList.remove("visible"); }
+function resetSR(){ const r=document.getElementById("ringFill"); r.style.strokeDasharray=CIRC_SM; r.style.strokeDashoffset=0; r.classList.remove("warning","urgent"); document.getElementById("ringText").textContent=TOTAL_SECS; }
+function resetBR(){ const r=document.getElementById("bigRingFill"); r.style.strokeDasharray=CIRC_BIG; r.style.strokeDashoffset=0; r.classList.remove("warning","urgent"); document.getElementById("bigRingText").textContent=TOTAL_SECS; }
+
+/* ── VIDEO RECORDING ── */
+function toggleVideoRec(){ if(!cameraOn){setStatus("err","⚠️","Enable camera first");return;} videoRecording?stopVideoRec():startVideoRec(); }
+function startVideoRec(){
+  vidChunks=[]; const opts=MediaRecorder.isTypeSupported("video/webm;codecs=vp9")?{mimeType:"video/webm;codecs=vp9"}:{mimeType:"video/webm"};
+  vidRecorder=new MediaRecorder(camStream,opts); vidRecorder.ondataavailable=e=>{if(e.data.size>0)vidChunks.push(e.data);}; vidRecorder.onstop=finalizeVideoClip; vidRecorder.start(100);
+  videoRecording=true; vidSecs=0;
+  vidTimer=setInterval(()=>{ vidSecs++; const m=Math.floor(vidSecs/60),s=vidSecs%60; document.getElementById("timerBadge").textContent=`⏺ ${m}:${s.toString().padStart(2,"0")}`; },1000);
+  document.getElementById("timerBadge").classList.add("visible"); document.getElementById("recIndicator").classList.add("live");
+  document.getElementById("camStatusLabel").textContent="Recording…"; document.getElementById("btnVideoRec").classList.add("active"); document.getElementById("btnVideoRec").textContent="⏹ Stop Rec";
+  document.getElementById("waveContainer").classList.add("visible"); startSessionTimer("video");
+  setStatus("rec","🔴","60s video recording — 6 snapshots auto-captured");
+}
+function stopVideoRec(auto=false){
+  if(vidRecorder&&vidRecorder.state!=="inactive") vidRecorder.stop(); clearInterval(vidTimer); vidTimer=null;
+  if(!auto) stopSessionTimer(); videoRecording=false;
+  document.getElementById("timerBadge").classList.remove("visible"); document.getElementById("recIndicator").classList.remove("live");
+  document.getElementById("camStatusLabel").textContent=cameraOn?"Camera ready":"Camera off"; document.getElementById("btnVideoRec").classList.remove("active"); document.getElementById("btnVideoRec").textContent="🔴 Record";
+  document.getElementById("waveContainer").classList.remove("visible");
+}
+function finalizeVideoClip(){
+  const blob=new Blob(vidChunks,{type:"video/webm"}); clipBlobs[qIndex]=blob;
+  const url=URL.createObjectURL(blob); document.getElementById("clipPreview").src=url;
+  const dl=document.getElementById("clipDownload"); dl.href=url; dl.download=`Q${qIndex+1}_video.webm`;
+  document.getElementById("clipName").textContent=`Q${qIndex+1}: ${QUESTIONS[qIndex].slice(0,30)}…`;
+  document.getElementById("clipDur").textContent=`${Math.floor(vidSecs/60)}:${(vidSecs%60).toString().padStart(2,"0")} · WebM`;
+  document.getElementById("clipRow").classList.add("visible"); setStatus("ok","✅","Video saved + 6 snapshots captured");
+}
+
+/* ── COLLAGE ── */
+function buildCollageCells(){ const g=document.getElementById("collageGrid"); g.innerHTML=""; for(let i=0;i<MAX_SNAPS;i++){const c=document.createElement("div"); c.className="collage-cell"; c.id="cell"+i; c.innerHTML=`<div class="cell-empty">📷</div><div class="cell-label">${SNAP_LABELS[i]}</div>`; g.appendChild(c);} document.getElementById("collageQNum").textContent=qIndex+1; }
+function downloadCollage(){
+  const snaps=allSnaps[qIndex].filter(Boolean); if(!snaps.length){toast("No snaps yet — use camera + 🔴 Record first");return;}
+  const COLS=3,W=360,H=210,GAP=4; const cv=document.createElement("canvas"); cv.width=COLS*W+(COLS+1)*GAP; cv.height=2*H+3*GAP+32;
+  const ctx=cv.getContext("2d"); ctx.fillStyle="#0a0a0f"; ctx.fillRect(0,0,cv.width,cv.height); ctx.fillStyle="#111118"; ctx.fillRect(0,0,cv.width,30);
+  ctx.fillStyle="rgba(124,106,247,.9)"; ctx.font="bold 13px sans-serif"; ctx.textAlign="left"; ctx.fillText(`HirePrep AI · Q${qIndex+1} Collage`,12,20);
+  ctx.fillStyle="rgba(255,255,255,.35)"; ctx.font="12px sans-serif"; ctx.textAlign="right"; ctx.fillText(`${snaps.length}/6 snaps`,cv.width-12,20);
+  let loaded=0;
+  snaps.forEach((src,i)=>{ const img=new Image(); img.onload=()=>{ const col=i%COLS,row=Math.floor(i/COLS); const x=GAP+col*(W+GAP),y=32+GAP+row*(H+GAP); ctx.save(); rr(ctx,x,y,W,H,6); ctx.clip(); ctx.drawImage(img,x,y,W,H); ctx.restore(); ctx.fillStyle="rgba(0,0,0,.58)"; rr(ctx,x,y+H-20,W,20,{bl:6,br:6,tl:0,tr:0}); ctx.fill(); ctx.fillStyle="rgba(255,255,255,.82)"; ctx.font="bold 11px sans-serif"; ctx.textAlign="center"; ctx.fillText(SNAP_LABELS[i],x+W/2,y+H-7); if(++loaded===snaps.length){const a=document.createElement("a");a.download=`Q${qIndex+1}_collage.jpg`;a.href=cv.toDataURL("image/jpeg",.93);a.click();toast("📸 Collage downloaded!");} }; img.src=src; });
+}
+function rr(ctx,x,y,w,h,r){ if(typeof r==="number")r={tl:r,tr:r,br:r,bl:r}; ctx.beginPath(); ctx.moveTo(x+r.tl,y); ctx.lineTo(x+w-r.tr,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r.tr); ctx.lineTo(x+w,y+h-r.br); ctx.quadraticCurveTo(x+w,y+h,x+w-r.br,y+h); ctx.lineTo(x+r.bl,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r.bl); ctx.lineTo(x,y+r.tl); ctx.quadraticCurveTo(x,y,x+r.tl,y); ctx.closePath(); }
+
+/* ── STOP ALL ── */
+function stopAll(){ if(voiceActive) endVoice(); if(videoRecording) stopVideoRec(); setStatus("","💬","Stopped — edit your answer then click Next"); }
+
+/* ── NAVIGATION ── */
+function nextQuestion(){
+  stopAll();
+  const ans=document.getElementById("answer").value.trim();
+  if(!ans&&!clipBlobs[qIndex]){setStatus("err","⚠️","Please speak or type an answer first");return;}
+  interviewAnswers.push({question:QUESTIONS[qIndex],answer:ans||(clipBlobs[qIndex]?"(video recorded)":""),hasVideo:!!clipBlobs[qIndex],snaps:allSnaps[qIndex].length});
+  if(qIndex<QUESTIONS.length-1){
+    qIndex++; updateHeader();
+    const qt=document.getElementById("questionText"); qt.classList.add("fade");
+    setTimeout(()=>{qt.textContent=QUESTIONS[qIndex];qt.classList.remove("fade");},250);
+    document.getElementById("answer").value=""; accumulated=""; updateWordCount();
+    document.getElementById("clipRow").classList.remove("visible"); document.getElementById("collageSection").classList.remove("visible");
+    document.getElementById("transcriptDone").classList.remove("visible");
+    setStatus("","💬","Click 🎙 Voice to transcribe, or enable camera for video");
+  } else { document.getElementById("interviewBody").style.display="none"; document.getElementById("doneScreen").classList.add("visible"); if(cameraOn) stopCamera(); }
+}
+function updateHeader(){ document.getElementById("qCounter").textContent=`Question ${qIndex+1} of ${QUESTIONS.length}`; document.getElementById("progressFill").style.width=((qIndex+1)/QUESTIONS.length*100)+"%"; }
+function updateWordCount(){ const w=document.getElementById("answer").value.trim().split(/\s+/).filter(Boolean).length; document.getElementById("charCount").textContent=w+" word"+(w!==1?"s":""); }
+document.getElementById("answer").addEventListener("input",updateWordCount);
+function setStatus(t,i,s){ document.getElementById("statusBar").className="status-bar"+(t?" "+t:""); document.getElementById("statusIcon").textContent=i; document.getElementById("statusText").textContent=s; }
+function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2800); }
+
+function submitAnswers(){
+  const btn=document.querySelector(".btn-submit"); btn.textContent="Submitting…"; btn.style.opacity="0.7";
+  fetch("http://127.0.0.1:5000/analyze",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({answers:interviewAnswers})})
+  .then(r=>r.json()).then(data=>{localStorage.setItem("feedbackData",JSON.stringify(data));window.location.href="interview_feedback.html";})
+  .catch(()=>{btn.textContent="Submit for Feedback →";btn.style.opacity="1";alert("Could not reach the server. Make sure Flask is running on port 5000.");});
+}
+
+resetSR(); resetBR(); buildCollageCells();
+</script>
+</body>
+</html>
